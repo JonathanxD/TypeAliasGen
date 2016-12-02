@@ -27,7 +27,7 @@
  */
 package com.github.jonathanxd.typealiasgen
 
-data class Element(val qualifiedName: String) {
+data class Element(val genName: String, val qualifiedName: String) {
     val simpleName: String =
             if (!qualifiedName.contains("."))
                 qualifiedName

@@ -47,7 +47,7 @@ object Gen {
         val name = if(basePackageName != null) "$basePackageName." else ""
 
         elements.forEach {
-            receiver("typealias $prefix${nameResolver(it)}$suffix = $name${it.qualifiedName}")
+            receiver("typealias $prefix${nameResolver(it)}$suffix = $name${it.genName}")
         }
 
         finisher()

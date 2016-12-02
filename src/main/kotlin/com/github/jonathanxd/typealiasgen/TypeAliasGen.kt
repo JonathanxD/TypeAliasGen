@@ -123,11 +123,17 @@ object TypeAliasGen {
                         (it.fileName.toString().endsWith(".java")
                                 || it.fileName.toString().endsWith(".kt")
                                 || (it.fileName.toString().endsWith(".class") && !it.fileName.toString().contains("$")))
-            }.map { Element(it.toQualifiedName(dir.nameCount)) }.toList()
+            }.map {
+                val name = it.toQualifiedName(dir.nameCount)
+                Element(name, name)
+            }.toList()
         }
     }
 
-    fun fromClasses(classes: Iterable<Class<*>>) = classes.filter { it.canonicalName != null && Modifier.isPublic(it.modifiers) }.map { Element(it.canonicalName) }
+    fun fromClasses(classes: Iterable<Class<*>>) = classes
+            .filter { it.canonicalName != null && Modifier.isPublic(it.modifiers) }
+            .map { Element(getGenName(it), it.canonicalName) }
+            .distinct()
 
     fun fromCp(basePackage: String) =
             fromClasses(
@@ -135,6 +141,15 @@ object TypeAliasGen {
                             .getSubTypesOf(Object::class.java)
             )
 
+    fun getGenName(klass: Class<*>): String {
+        val name = klass.canonicalName
+        val typeParameters = klass.typeParameters
+
+        if(typeParameters.isEmpty())
+            return name
+
+        return "$name${typeParameters.map { "*" }.joinToString(separator = ",", prefix = "<", postfix = ">")}"
+    }
 }
 
 fun Path.toQualifiedName(nameOffset: Int = 0) =
