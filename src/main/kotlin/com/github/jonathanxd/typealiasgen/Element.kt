@@ -27,9 +27,9 @@
  */
 package com.github.jonathanxd.typealiasgen
 
-data class Element(val genName: String, val qualifiedName: String) {
+data class Element(val genName: String, val qualifiedName: String, val simpleName_: String? = null) {
     val simpleName: String =
-            if (!qualifiedName.contains("."))
+            simpleName_ ?: if (!qualifiedName.contains("."))
                 qualifiedName
             else
                 qualifiedName.substring(qualifiedName.lastIndexOf('.') + 1)

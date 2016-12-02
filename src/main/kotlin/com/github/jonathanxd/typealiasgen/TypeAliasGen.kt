@@ -132,7 +132,7 @@ object TypeAliasGen {
 
     fun fromClasses(classes: Iterable<Class<*>>) = classes
             .filter { it.canonicalName != null && Modifier.isPublic(it.modifiers) }
-            .map { Element(getGenName(it), it.canonicalName) }
+            .map { getGenElement(it) }
             .distinct()
 
     fun fromCp(basePackage: String) =
@@ -141,14 +141,22 @@ object TypeAliasGen {
                             .getSubTypesOf(Object::class.java)
             )
 
-    fun getGenName(klass: Class<*>): String {
+    fun getGenElement(klass: Class<*>): Element {
         val name = klass.canonicalName
         val typeParameters = klass.typeParameters
+        var simpleName: String = klass.simpleName
+
+        var klass_: Class<*> = klass
+
+        while(klass_.declaringClass != null) {
+            simpleName = "${klass_.declaringClass.simpleName}$simpleName"
+            klass_ = klass_.declaringClass
+        }
 
         if(typeParameters.isEmpty())
-            return name
+            return Element(name, klass.canonicalName, simpleName)
 
-        return "$name${typeParameters.map { "*" }.joinToString(separator = ",", prefix = "<", postfix = ">")}"
+        return Element("$name${typeParameters.map { "*" }.joinToString(separator = ",", prefix = "<", postfix = ">")}", klass.canonicalName, simpleName)
     }
 }
 
