@@ -12,6 +12,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:$license_version"
+        classpath "com.github.jengelman.gradle.plugins:shadow:$shadow_version"
     }
 }
 
@@ -30,6 +31,9 @@ apply plugin: 'org.jetbrains.dokka'
 // License
 apply plugin: 'license'
 
+// Shade
+apply plugin: 'com.github.johnrengelman.shadow'
+
 sourceCompatibility = 1.8
 
 // Tasks
@@ -38,7 +42,8 @@ jar {
 
     manifest {
         attributes 'Implementation-Title': baseName,
-                'Implementation-Version': version
+                'Implementation-Version': version,
+                'Main-Class': 'com.github.jonathanxd.typealiasgen.TypeAliasGenKt'
     }
 }
 
@@ -85,6 +90,7 @@ task javadocJar(type: Jar, dependsOn: dokka) {
 artifacts {
     archives sourcesJar
     archives javadocJar
+    archives shadowJar
 }
 
 license {

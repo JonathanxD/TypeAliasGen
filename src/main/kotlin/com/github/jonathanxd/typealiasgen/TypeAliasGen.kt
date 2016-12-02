@@ -111,8 +111,10 @@ object TypeAliasGen {
         val dir = Paths.get(baseDir)
         return Files.walk(dir).use {
             it.filter {
-                Files.isRegularFile(it) && it.fileName.toString().endsWith(".java")
-                        || (it.fileName.toString().endsWith(".class") && !it.fileName.toString().contains("$"))
+                Files.isRegularFile(it) &&
+                        (it.fileName.toString().endsWith(".java")
+                        || it.fileName.toString().endsWith(".kt")
+                        || (it.fileName.toString().endsWith(".class") && !it.fileName.toString().contains("$")))
             }.map { Element(it.toQualifiedName(dir.nameCount)) }.toList()
         }
     }
@@ -127,6 +129,8 @@ fun Path.toQualifiedName(nameOffset: Int = 0) =
                 .let {
                     if (it.endsWith(".class"))
                         it.substring(0..(it.lastIndexOf(".class") - 1))
+                    if (it.endsWith(".kt"))
+                        it.substring(0..(it.lastIndexOf(".kt") - 1))
                     else if (it.endsWith(".java"))
                         it.substring(0..(it.lastIndexOf(".java") - 1))
                     else it
