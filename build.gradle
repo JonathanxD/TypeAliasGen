@@ -1,0 +1,114 @@
+buildscript {
+    apply from: 'gradle/versions.gradle'
+
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven { url "http://dl.bintray.com/kotlin/kotlin-eap-1.1" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
+        classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:$license_version"
+    }
+}
+
+group 'com.github.jonathanxd'
+version '1.0-SNAPSHOT'
+
+// IDE
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+// Programming Language
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'org.jetbrains.dokka'
+
+// License
+apply plugin: 'license'
+
+sourceCompatibility = 1.8
+
+// Tasks
+jar {
+    from "$rootProject.rootDir/LICENSE"
+
+    manifest {
+        attributes 'Implementation-Title': baseName,
+                'Implementation-Version': version
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url "http://dl.bintray.com/kotlin/kotlin-eap-1.1" }
+}
+
+test {
+    useJUnit()
+}
+
+dependencies {
+    // Kotlin
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+
+    // Test
+    testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+dokka {
+    outputFormat = 'javadoc'
+    outputDirectory = javadoc.destinationDir
+    includes = ['src/main/Module.md']
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: dokka) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+license {
+    ext.name = project.name
+    ext.description = project.description
+    ext.organization = project.organization
+    ext.url = project.url
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+
+    exclude "**/*.info"
+    exclude "**/*.md"
+    exclude "res/**"
+    exclude "src/main/resources/**"
+    exclude "src/test/resources/**"
+
+    header rootProject.file('LICENSE_HEADER')
+
+    sourceSets = project.sourceSets
+
+    ignoreFailures false
+    strictCheck true
+
+    mapping {
+        java = 'JAVADOC_STYLE'
+        kt = 'JAVADOC_STYLE'
+    }
+}
