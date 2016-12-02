@@ -27,6 +27,8 @@
  */
 package com.github.jonathanxd.typealiasgen
 
+import org.reflections.Reflections
+import org.reflections.scanners.SubTypesScanner
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -52,8 +54,13 @@ fun main(args: Array<String>) {
     val prefix = args.getOrElse(3, { "" }).orDefault()
     val suffix = args.getOrElse(4, { "" }).orDefault()
     val output = args.getOrElse(5, { null })?.orNull()
+    val analyzeCp = args.getOrElse(6, { null })?.orNull() != null
 
-    val elements = TypeAliasGen.fromFiles(dir)
+    val elements =
+            if (!analyzeCp)
+                TypeAliasGen.fromFiles(dir)
+            else
+                TypeAliasGen.fromCp(dir)
 
     val sb = StringBuilder()
 
@@ -73,7 +80,7 @@ fun main(args: Array<String>) {
                 {
                     val file = File(output)
                     file.parentFile?.let(File::mkdirs)
-                    if(file.exists())
+                    if (file.exists())
                         file.delete()
 
                     Files.write(file.toPath(), sb.toString().toByteArray(charset = Charsets.UTF_8), StandardOpenOption.CREATE)
@@ -103,7 +110,7 @@ private fun showHelp() {
     println("[] = required, <> = optional")
     println("UTF-8 Character ~ = default value")
 
-    println("java -jar $name [dir] <package> <basePackage> <prefix> <suffix> <output>")
+    println("java -jar $name [dir] <package> <basePackage> <prefix> <suffix> <output> <analyzeCp>")
 }
 
 object TypeAliasGen {
@@ -113,13 +120,20 @@ object TypeAliasGen {
             it.filter {
                 Files.isRegularFile(it) &&
                         (it.fileName.toString().endsWith(".java")
-                        || it.fileName.toString().endsWith(".kt")
-                        || (it.fileName.toString().endsWith(".class") && !it.fileName.toString().contains("$")))
+                                || it.fileName.toString().endsWith(".kt")
+                                || (it.fileName.toString().endsWith(".class") && !it.fileName.toString().contains("$")))
             }.map { Element(it.toQualifiedName(dir.nameCount)) }.toList()
         }
     }
 
-    fun fromClasses(classes: Iterable<Class<*>>) = classes.map { Element(it.canonicalName) }
+    fun fromClasses(classes: Iterable<Class<*>>) = classes.filter { it.canonicalName != null }.map { Element(it.canonicalName) }
+
+    fun fromCp(basePackage: String) =
+            fromClasses(
+                    Reflections(basePackage, SubTypesScanner(false))
+                            .getSubTypesOf(Object::class.java)
+            )
+
 }
 
 fun Path.toQualifiedName(nameOffset: Int = 0) =

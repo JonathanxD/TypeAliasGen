@@ -6,10 +6,10 @@ Generate type alias from a class list or source/class file list.
 
 ## Usage
 
-`java -jar TypeAliasGen-1.0-SNAPSHOT-all.jar [dir] <package> <basePackage> <prefix> <suffix> <output>`
+`java -jar TypeAliasGen-1.0-SNAPSHOT-all.jar [dir] <package> <basePackage> <prefix> <suffix> <output> <analyzeCp>`
 
 - Dir
-  - Directory to scan for source or class files.
+  - Directory (or base package if analyzeCp is defined) to scan for source or class files.
 
 - Package
   - Package of the generated class (.kt).
@@ -25,6 +25,9 @@ Generate type alias from a class list or source/class file list.
 
 - Output
   - Output file.
+  
+- AnalyzeCP
+  - Analyze classpath instead of directory. Dir is the base package to analyze.
 
 If you don't specify neither Suffix or Prefix, TypeAliasGen will generate a TypeAlias with same name of the file.
 

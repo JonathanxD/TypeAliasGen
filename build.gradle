@@ -17,7 +17,7 @@ buildscript {
 }
 
 group 'com.github.jonathanxd'
-version '1.0-SNAPSHOT'
+version '1.1.0-SNAPSHOT'
 
 // IDE
 apply plugin: 'idea'
@@ -57,6 +57,7 @@ test {
 }
 
 dependencies {
+    compile "org.reflections:reflections:$reflections_version"
     // Kotlin
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 
