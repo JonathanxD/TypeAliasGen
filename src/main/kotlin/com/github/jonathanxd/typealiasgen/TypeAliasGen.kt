@@ -30,6 +30,7 @@ package com.github.jonathanxd.typealiasgen
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import java.io.File
+import java.lang.reflect.Modifier
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -126,7 +127,7 @@ object TypeAliasGen {
         }
     }
 
-    fun fromClasses(classes: Iterable<Class<*>>) = classes.filter { it.canonicalName != null }.map { Element(it.canonicalName) }
+    fun fromClasses(classes: Iterable<Class<*>>) = classes.filter { it.canonicalName != null && Modifier.isPublic(it.modifiers) }.map { Element(it.canonicalName) }
 
     fun fromCp(basePackage: String) =
             fromClasses(
