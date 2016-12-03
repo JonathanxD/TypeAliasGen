@@ -50,14 +50,17 @@ object Gen {
         val basePackage = if(basePackageName != null) "$basePackageName." else ""
 
         elements.forEach {
-            var typeAliasName = "$prefix${nameResolver(it)}$suffix"
-            val aliasPath = "$basePackage${it.genName}"
-
-            if(names.containsKey(typeAliasName)) {
-                typeAliasName = uniqueName(names, typeAliasName, it)
+            val resolvedName: String = nameResolver(it).let{ name ->
+                if(names.containsKey(name))
+                    this.uniqueName(names, name, it)
+                else
+                    name
             }
 
-            names += typeAliasName to aliasPath
+            val aliasPath = "$basePackage${it.genName}"
+            val typeAliasName = "$prefix$resolvedName$suffix"
+
+            names += resolvedName to aliasPath
 
             receiver("typealias $typeAliasName = $aliasPath")
         }
