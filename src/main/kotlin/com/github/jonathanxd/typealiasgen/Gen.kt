@@ -66,7 +66,7 @@ object Gen {
     }
 
     private fun uniqueName(map: Map<String, String>, name: String, element: Element): String {
-        val packageParts = element.packageName.split(".").map(String::capitalize)
+        val packageParts = if(element.packageName.isEmpty()) emptyList() else element.packageName.split(".").map(String::capitalize)
         var endName = name
         var i = packageParts.size - 1
 

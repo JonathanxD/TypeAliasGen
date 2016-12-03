@@ -34,5 +34,5 @@ data class Element(val genName: String, val qualifiedName: String, val simpleNam
             else
                 qualifiedName.substring(qualifiedName.lastIndexOf('.') + 1)
 
-    val packageName = qualifiedName.substring(0, qualifiedName.lastIndexOf(simpleName)-1)
+    val packageName = if(!qualifiedName.contains(".")) "" else qualifiedName.substring(0, qualifiedName.lastIndexOf(simpleName)-1)
 }
