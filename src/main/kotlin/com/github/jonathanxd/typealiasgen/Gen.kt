@@ -37,6 +37,9 @@ object Gen {
             nameResolver: (Element) -> String = Element::simpleName,
             receiver: (String) -> Unit,
             finisher: () -> Unit) {
+
+        val names = mutableMapOf<String, String>()
+
         packageName?.let {
             if(it.isNotEmpty()) {
                 receiver("package $packageName")
@@ -44,12 +47,37 @@ object Gen {
             }
         }
 
-        val name = if(basePackageName != null) "$basePackageName." else ""
+        val basePackage = if(basePackageName != null) "$basePackageName." else ""
 
         elements.forEach {
-            receiver("typealias $prefix${nameResolver(it)}$suffix = $name${it.genName}")
+            var typeAliasName = "$prefix${nameResolver(it)}$suffix"
+            val aliasPath = "$basePackage${it.genName}"
+
+            if(names.containsKey(typeAliasName)) {
+                typeAliasName = uniqueName(names, typeAliasName, it)
+            }
+
+            names += typeAliasName to aliasPath
+
+            receiver("typealias $typeAliasName = $aliasPath")
         }
 
         finisher()
+    }
+
+    private fun uniqueName(map: Map<String, String>, name: String, element: Element): String {
+        val packageParts = element.packageName.split(".").map(String::capitalize)
+        var endName = name
+        var i = packageParts.size - 1
+
+        while(map.containsKey(endName) && i > -1) {
+            endName = "${packageParts[i]}$endName"
+            --i
+        }
+
+        if(map.containsKey(endName))
+            throw IllegalStateException("Cannot generate a unique name for element '$element' with name: '$name', generatedName: '$endName'")
+
+        return endName
     }
 }

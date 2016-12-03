@@ -33,4 +33,6 @@ data class Element(val genName: String, val qualifiedName: String, val simpleNam
                 qualifiedName
             else
                 qualifiedName.substring(qualifiedName.lastIndexOf('.') + 1)
+
+    val packageName = qualifiedName.substring(0, qualifiedName.lastIndexOf(simpleName)-1)
 }
