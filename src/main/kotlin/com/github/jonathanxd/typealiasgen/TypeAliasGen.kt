@@ -154,9 +154,9 @@ object TypeAliasGen {
         }
 
         if(typeParameters.isEmpty())
-            return Element(name, klass.canonicalName, simpleName)
+            return Element(name, klass.canonicalName, simpleName, klass.`package`?.name)
 
-        return Element("$name${typeParameters.map { "*" }.joinToString(separator = ",", prefix = "<", postfix = ">")}", klass.canonicalName, simpleName)
+        return Element("$name${typeParameters.map { "*" }.joinToString(separator = ",", prefix = "<", postfix = ">")}", klass.canonicalName, simpleName, klass.`package`?.name)
     }
 }
 
