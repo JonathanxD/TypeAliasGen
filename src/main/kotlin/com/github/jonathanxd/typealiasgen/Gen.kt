@@ -27,6 +27,8 @@
  */
 package com.github.jonathanxd.typealiasgen
 
+import com.github.jonathanxd.typealiasgen.util.duplicates
+
 object Gen {
 
     fun gen(elements: List<Element>,
@@ -38,47 +40,57 @@ object Gen {
             receiver: (String) -> Unit,
             finisher: () -> Unit) {
 
-        val names = mutableMapOf<String, String>()
+        val mapped = mapToName(elements, basePackageName, nameResolver)
 
         packageName?.let {
-            if(it.isNotEmpty()) {
+            if (it.isNotEmpty()) {
                 receiver("package $packageName")
                 receiver("")
             }
         }
 
-        val basePackage = if(basePackageName != null) "$basePackageName." else ""
+        mapped.forEach { k, v ->
+            val typeAliasName = "$prefix$k$suffix"
 
-        elements.forEach {
-            val resolvedName: String = nameResolver(it).let{ name ->
-                if(names.containsKey(name))
-                    this.uniqueName(names, name, it)
-                else
-                    name
-            }
-
-            val aliasPath = "$basePackage${it.genName}"
-            val typeAliasName = "$prefix$resolvedName$suffix"
-
-            names += resolvedName to aliasPath
-
-            receiver("typealias $typeAliasName = $aliasPath")
+            receiver("typealias $typeAliasName = $v")
         }
 
         finisher()
     }
 
-    private fun uniqueName(map: Map<String, String>, name: String, element: Element): String {
-        val packageParts = if(element.packageName.isEmpty()) emptyList() else element.packageName.split(".").map(String::capitalize)
+    fun mapToName(elements: List<Element>, basePackageName: String?, nameResolver: (Element) -> String): Map<String, String> {
+        val map = mutableMapOf<String, String>()
+        val duplicatedNames = elements.map { nameResolver(it) }.duplicates()
+
+        val basePackage = if (basePackageName != null) "$basePackageName." else ""
+
+        elements.forEach {
+            val resolvedName = nameResolver(it).let { name ->
+                if(duplicatedNames.contains(name))
+                    this.uniqueName(duplicatedNames, name, it)
+                else
+                    name
+            }
+
+            val aliasPath = "$basePackage${it.genName}"
+
+            map += resolvedName to aliasPath
+        }
+
+        return map
+    }
+
+    private fun uniqueName(set: Set<String>, name: String, element: Element): String {
+        val packageParts = if (element.packageName.isEmpty()) emptyList() else element.packageName.split(".").map(String::capitalize)
         var endName = name
         var i = packageParts.size - 1
 
-        while(map.containsKey(endName) && i > -1) {
+        while (set.contains(endName) && i > -1) {
             endName = "${packageParts[i]}$endName"
             --i
         }
 
-        if(map.containsKey(endName))
+        if (set.contains(endName))
             throw IllegalStateException("Cannot generate a unique name for element '$element' with name: '$name', generatedName: '$endName'")
 
         return endName
