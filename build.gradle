@@ -17,7 +17,7 @@ buildscript {
 }
 
 group 'com.github.jonathanxd'
-version '1.1.8-SNAPSHOT'
+version '1.1.9-SNAPSHOT'
 
 // IDE
 apply plugin: 'idea'
@@ -57,7 +57,8 @@ test {
 }
 
 dependencies {
-    compile "org.reflections:reflections:$reflections_version"
+    compile "io.github.lukehutch:fast-classpath-scanner:$fastclasspathscanner_version"
+
     // Kotlin
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 

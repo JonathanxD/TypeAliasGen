@@ -27,8 +27,7 @@
  */
 package com.github.jonathanxd.typealiasgen
 
-import org.reflections.Reflections
-import org.reflections.scanners.SubTypesScanner
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner
 import java.io.File
 import java.lang.reflect.Modifier
 import java.nio.file.Files
@@ -137,8 +136,9 @@ object TypeAliasGen {
 
     fun fromCp(basePackage: String) =
             fromClasses(
-                    Reflections(basePackage, SubTypesScanner(false))
-                            .getSubTypesOf(Object::class.java)
+                    FastClasspathScanner(basePackage).strictWhitelist().scan()
+                            .namesOfAllClasses.map { this.javaClass.classLoader.loadClass(it) }
+
             )
 
     fun getGenElement(klass: Class<*>): Element {
@@ -148,12 +148,12 @@ object TypeAliasGen {
 
         var klass_: Class<*> = klass
 
-        while(klass_.declaringClass != null) {
+        while (klass_.declaringClass != null) {
             simpleName = "${klass_.declaringClass.simpleName}$simpleName"
             klass_ = klass_.declaringClass
         }
 
-        if(typeParameters.isEmpty())
+        if (typeParameters.isEmpty())
             return Element(name, klass.canonicalName, simpleName, klass.`package`?.name)
 
         return Element("$name${typeParameters.map { "*" }.joinToString(separator = ",", prefix = "<", postfix = ">")}", klass.canonicalName, simpleName, klass.`package`?.name)
