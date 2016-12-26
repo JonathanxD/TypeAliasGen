@@ -66,7 +66,7 @@ object Gen {
 
         elements.forEach {
             val resolvedName = nameResolver(it).let { name ->
-                if(duplicatedNames.contains(name))
+                if (duplicatedNames.contains(name))
                     this.uniqueName(duplicatedNames, name, it)
                 else
                     name
@@ -74,11 +74,27 @@ object Gen {
 
             val aliasPath = "$basePackage${it.genName}"
 
-            map += resolvedName to aliasPath
+            map += fixReservedName(resolvedName) to fixReservedName(aliasPath)
         }
 
         return map
     }
+
+    private fun fixReservedName(name: String): String = if (name.contains('.')) {
+        name.split(".").map(this::fixReservedName_).joinToString(separator = ".")
+    } else {
+        this.fixReservedName_(name)
+    }
+
+
+    private fun fixReservedName_(name: String): String = when (name) {
+        "package", "as", "typealias", "class", "this", "super", "val", "var",
+        "fun", "for", "null", "true", "false", "is", "in", "throw", "return",
+        "break", "continue", "object", "if", "try", "else", "while", "do",
+        "when", "interface", "typeof", "yield", "sealed", "async" -> "`$name`"
+        else -> name
+    }
+
 
     private fun uniqueName(set: Set<String>, name: String, element: Element): String {
         val packageParts = if (element.packageName.isEmpty()) emptyList() else element.packageName.split(".").map(String::capitalize)
